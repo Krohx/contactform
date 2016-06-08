@@ -1,21 +1,21 @@
 
 
-from Flask import .
-from flask.ext.mail import FlaskMail
+# from flask import Flask
+# from flask.ext.mail import FlaskMail
 
-app = Flask(__init__)
+# app = Flask(__init__)
 
-@app.route('/'):
-def index():
-    return 'Contact Form for Static Websites'
+# @app.route('/'):
+# def index():
+#     return 'Contact Form for Static Websites'
 
 
-@app.route('/submit/<user>', methods=['POST', 'GET'])
-def submit(user=None):
-    if user is None:
-        return redirect()(url_for('index'))
-    else:
-        pass
+# @app.route('/submit/<user>', methods=['POST', 'GET'])
+# def submit(user=None):
+#     if user is None:
+#         return redirect()(url_for('index'))
+#     else:
+#         pass
         
 
 
@@ -36,14 +36,15 @@ for when the JobNowNow app launches.
 import os
 
 # library imports
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask_mail import Mail
 from flask import redirect, request
 from lepl.apps.rfc3696 import Email # for email validation
 
 # local imports
-from config import Config, DevConfig
+#from config import Config, DevConfig
 
 #export JOBNOWNOW_EMAIL_CFG=dev
 app = Flask(__name__)
@@ -62,7 +63,7 @@ mail = Mail(app)
 # email validator
 validator = Email()
 
-import db_ops # to avoid issue around circular imports
+#import db_ops # to avoid issue around circular imports
 
 HOME_URL = 'http://jobnownow.com/'
 REDIRECT_URL = 'http://jobnownow.com/thankyou.html'

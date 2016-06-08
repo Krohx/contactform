@@ -1,0 +1,12 @@
+gitnore
+temp.py
+*~
+*.swp
+*.pyc
+*.orig
+.hg
+*hgignore*
+*zedstate*
+*.sqlite
+.~lock*
+jobnownow/data/
