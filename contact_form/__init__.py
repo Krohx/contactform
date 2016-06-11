@@ -1,31 +1,8 @@
-
-
-# from flask import Flask
-# from flask.ext.mail import FlaskMail
-
-# app = Flask(__init__)
-
-# @app.route('/'):
-# def index():
-#     return 'Contact Form for Static Websites'
-
-
-# @app.route('/submit/<user>', methods=['POST', 'GET'])
-# def submit(user=None):
-#     if user is None:
-#         return redirect()(url_for('index'))
-#     else:
-#         pass
-        
-
-
-
 """
-jobnownow_website
-~~~~~~~~~~~~~~~~~
+contact_form
+~~~~~~~~~~~~
 
-Pre-launch website for collecting subscription emails
-for when the JobNowNow app launches.
+Contact form app for static websites
 
 :author: Krohx Technologies (krohxinc@gmail.com)
 :copyright: (c) 2016 by Krohx Technologies
@@ -36,105 +13,145 @@ for when the JobNowNow app launches.
 import os
 
 # library imports
-from flask import Flask, redirect, url_for
-from flask.ext.bootstrap import Bootstrap
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask_mail import Mail
-from flask import redirect, request
+from flask import Flask, redirect, url_for, redirect, request, render_template
+from flask_mail import Mail, Message
+from flask_sqlalchemy import SQLAlchemy
 from lepl.apps.rfc3696 import Email # for email validation
 
-# local imports
-#from config import Config, DevConfig
+import config
 
-#export JOBNOWNOW_EMAIL_CFG=dev
 app = Flask(__name__)
-cfg = 'dev' #os.getenv('JOBNOWNOW_EMAIL_CFG') 
+app.config.from_object(config)
 
-# if cfg is None or cfg != 'dev':
-#     app.config.from_object(Config)
-# else:
-#     app.config.from_object(DevConfig)
 
 # Instantiate Flask extensions
-bootstrap = Bootstrap(app)
-db = SQLAlchemy(app)
 mail = Mail(app)
+db = SQLAlchemy(app)
+
+
+import db_ops # circular import guard
+#db.create_all()
 
 # email validator
 validator = Email()
 
-#import db_ops # to avoid issue around circular imports
-
-HOME_URL = 'http://jobnownow.com/'
-REDIRECT_URL = 'http://jobnownow.com/thankyou.html'
-
-
 @app.route('/index/')
 @app.route('/')
 def index():
-    return redirect(HOME_URL)
+    return redirect(request.referrer)
 
 
 @app.route('/send_mail/', methods=['POST'])
-def subscribe(email=''):
-    form = request.form
-    name = form['name'].decode('utf-8')
-    email = form['email'].decode('utf-8')
-    message = form['message'].decode('utf-8')
+def submit_message():
+    form_dict = dict(request.form)
 
-    print
-    print
-    print
-    print name # DEBUG
-    print email # DEBUG
-    print message # DEBUG
-    print request.referrer # DEBUG
-    print
-    print
-    print
+    data_fields = ['name', 'phone', 'email', 'message']
+    data = dict()
 
-    # if validate_email(email):
+    try:
+        for k,v in form_dict.iteritems():
+            if k in data_fields and bool(v[0]):
+                data[k] = unicode(v[0]).decode('utf-8')
+    except:
+        print 'Failed to handle form:\n\t%r' % request.form # DEBUG
+        return render_template('failure.html',
+            goto=request.referrer,
+            message="There was an error. Your message was not sent. Please try again."
+        )
 
-    #     db_ops.insert_val(db_ops.Subscription, dict(email=email))
-    #     print "URL Email Registered!"
-    # else:
-    #     db_ops.insert_val(db_ops.InvalidSub, dict(email=email))
-    #     print "URL Email Failed!"
+    if data.get('email'):
+        print '\nREFERRER %s\n' % request.referrer # DEBUG
+        site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
+        if site is not None:
+            if send_email(app, data.get('email'), message=data.get('message'), sender=config.MAIL_SENDER, subject="Contact-Form: New message from your website."):
+                return render_template('success.html',
+                    goto=request.referrer,
+                    message="Your message was sent successfully."
+                )
 
-    return redirect(REDIRECT_URL)
+    print 'Error! Not sending mail...\n\t%r' % request.form # DEBUG
+    return render_template('failure.html',
+        goto=request.referrer,
+        message="There was an error. Your message was not sent. Please try again."
+    )
 
-    
-# @app.route('/subscribe/', methods=['GET', 'POST'])
-# def subscribe_form():
-#     form = request.form
-#     email = form['email'].decode('utf-8')
 
-#     print email
-#     if validate_email(email):
-#         db_ops.insert_val(db_ops.Subscription, dict(email=email))
-#         print "Form Email Registered!"
-#     else:
-#         db_ops.insert_val(db_ops.InvalidSub, dict(email=email))
-#         print "Form Email Failed!"
+@app.route('/signup/', methods=['GET', 'POST'])
+def signup():
 
-#     return redirect(REDIRECT_URL)
+    if request.method == 'POST':
+        db_ops.rollback()
+        form_dict = dict(request.form)
+        param_dict = dict()
+
+        try:
+            param_dict['name'] = form_dict.get('name')[0]
+            param_dict['url'] = form_dict.get('url')[0]
+            param_dict['email'] = form_dict.get('email')[0]
+            param_dict['password'] = form_dict.get('password')[0]
+
+            # Need to cleanup this code
+            if validate_email(param_dict.get('email', 'invalid_email')):
+                if db_ops.insert_val(db_ops.Site, param_dict, rollback_on_fail=True):
+                    return render_template('success.html',
+                        goto=request.referrer,
+                        message="Thank you. Your site has been registered with us."
+                    )
+                else:
+                    assert False
+            else:
+                assert False
+        except:
+            print 'Error! Failed to register new site:\n\t%r' % request.form # DEBUG
+            return render_template('failure.html',
+                goto=request.referrer,
+                message="There was an error. Your registration was unsuccessful. Please try again."
+            )
+        finally:
+            param_dict.clear()
+
+    return render_template('signup.html')
 
 
 @app.errorhandler(500)
 def server_error(error):
-    return redirect(url_for(REDIRECT_URL)), 500
+    return redirect(request.referrer), 500
+
 
 @app.errorhandler(404)
 def _404(error):
-    return redirect(url_for(REDIRECT_URL)), 404
+    return redirect(request.referrer), 404
 
 
 def validate_email(email):
     return validator(email)
 
 
+def send_email(app, recp, message, sender=None, subject="Someone sent a message from your website."):
+
+    # if recipient is passed as a string,
+    # remove whitespaces and commas, splitting
+    # the string into a list of recipients
+    if isinstance(recp, str) or isinstance(recp, unicode):
+        recp = [k.strip() for k in recp.split(',')]
+    
+    if sender is None:
+        sender=config.MAIL_SENDER
+    try:
+        mail_msg = Message(
+            subject=subject,
+            recipients=recp,
+            html=message,
+            sender=sender
+        )
+
+        mail.send(mail_msg)
+        return True
+    except:
+        print 'Error formatting and sending email!' # DEBUG
+        return False
+
 
 if __name__ == '__main__':
     db.create_all()
     app.run()
-
