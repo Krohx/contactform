@@ -35,45 +35,79 @@ import db_ops # circular import guard
 # email validator
 validator = Email()
 
-@app.route('/index/')
-@app.route('/')
+@app.route('/index/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return redirect(request.referrer)
 
+    if request.method == 'POST':
+        form_dict = dict(request.form)
 
-@app.route('/send_mail/', methods=['POST'])
-def submit_message():
-    form_dict = dict(request.form)
+        data_fields = ['name', 'phone', 'email', 'message']
+        data = dict()
 
-    data_fields = ['name', 'phone', 'email', 'message']
-    data = dict()
+        try:
+            for k,v in form_dict.iteritems():
+                if k in data_fields and bool(v[0]):
+                    data[k] = unicode(v[0]).decode('utf-8')
+        except:
+            print 'Failed to handle form:\n\t%r' % request.form # DEBUG
+            return render_template('failure.html',
+                goto=request.referrer,
+                message="There was an error. Your message was not sent. Please try again."
+            )
 
-    try:
-        for k,v in form_dict.iteritems():
-            if k in data_fields and bool(v[0]):
-                data[k] = unicode(v[0]).decode('utf-8')
-    except:
-        print 'Failed to handle form:\n\t%r' % request.form # DEBUG
+        if data.get('email'):
+            print '\nREFERRER %s\n' % request.referrer # DEBUG
+            site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
+            if site is not None:
+                if send_email(app, data.get('email'), message=data.get('message'), sender=config.MAIL_SENDER, subject="Contact-Form: New message from your website."):
+                    return render_template('success.html',
+                        goto=request.referrer,
+                        message="Your message was sent successfully."
+                    )
+
+        print 'Error! Not sending mail...\n\t%r' % request.form # DEBUG
         return render_template('failure.html',
             goto=request.referrer,
             message="There was an error. Your message was not sent. Please try again."
         )
 
-    if data.get('email'):
-        print '\nREFERRER %s\n' % request.referrer # DEBUG
-        site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
-        if site is not None:
-            if send_email(app, data.get('email'), message=data.get('message'), sender=config.MAIL_SENDER, subject="Contact-Form: New message from your website."):
-                return render_template('success.html',
-                    goto=request.referrer,
-                    message="Your message was sent successfully."
-                )
+    return redirect(url_for('signup'))
 
-    print 'Error! Not sending mail...\n\t%r' % request.form # DEBUG
-    return render_template('failure.html',
-        goto=request.referrer,
-        message="There was an error. Your message was not sent. Please try again."
-    )
+
+# @app.route('/send_mail/', methods=['POST'])
+# def submit_message():
+#     form_dict = dict(request.form)
+
+#     data_fields = ['name', 'phone', 'email', 'message']
+#     data = dict()
+
+#     try:
+#         for k,v in form_dict.iteritems():
+#             if k in data_fields and bool(v[0]):
+#                 data[k] = unicode(v[0]).decode('utf-8')
+#     except:
+#         print 'Failed to handle form:\n\t%r' % request.form # DEBUG
+#         return render_template('failure.html',
+#             goto=request.referrer,
+#             message="There was an error. Your message was not sent. Please try again."
+#         )
+
+#     if data.get('email'):
+#         print '\nREFERRER %s\n' % request.referrer # DEBUG
+#         site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
+#         if site is not None:
+#             if send_email(app, data.get('email'), message=data.get('message'), sender=config.MAIL_SENDER, subject="Contact-Form: New message from your website."):
+#                 return render_template('success.html',
+#                     goto=request.referrer,
+#                     message="Your message was sent successfully."
+#                 )
+
+#     print 'Error! Not sending mail...\n\t%r' % request.form # DEBUG
+#     return render_template('failure.html',
+#         goto=request.referrer,
+#         message="There was an error. Your message was not sent. Please try again."
+#     )
 
 
 @app.route('/signup/', methods=['GET', 'POST'])
