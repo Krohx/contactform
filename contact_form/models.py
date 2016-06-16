@@ -24,6 +24,9 @@ class Site(db.Model):
     def __repr__(self):
         return '<Site: %r; Email: %r>' % (self.url, self.email)
 
+    def __str__(self):
+        return self.__repr__()
+
     @property
     def password(self):
         '''

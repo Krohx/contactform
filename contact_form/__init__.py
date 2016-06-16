@@ -11,6 +11,7 @@ Contact form app for static websites
 
 # standard lib imports
 import os
+import logging
 
 # library imports
 from flask import Flask, redirect, url_for, redirect, request, render_template
@@ -23,11 +24,9 @@ import config
 app = Flask(__name__)
 app.config.from_object(config)
 
-
 # Instantiate Flask extensions
 mail = Mail(app)
 db = SQLAlchemy(app)
-
 
 import db_ops # circular import guard
 db.create_all()
@@ -35,22 +34,41 @@ db.create_all()
 # email validator
 validator = Email()
 
+# setup logging
+#logging.basicConfig(format='%(asctime)s | %(levelname)s: %(message)s', datefmt='%a %b, %Y (%I:%M:%S %p)', filename='app_log.log', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+if app.config.get('DEBUG', False):
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('app_log.log')
+formatter = logging.Formatter('%(asctime)s | %(levelname)s: %(message)s', datefmt='%a %b, %Y (%I:%M:%S %p)')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+
 @app.route('/index/', methods=['GET', 'POST'])
 @app.route('/', methods=['GET', 'POST'])
 def index():
 
     if request.method == 'POST':
+        logger.info('\n')
+        logger.info('New contact-us form received!')
+        logger.info('Site: %s', str(request.referrer))
         form_dict = dict(request.form)
+        logger.info('Form: %s', str(form_dict))
 
-        data_fields = ['name', 'phone', 'email', 'message']
+        data_fields = ['name', 'phone', 'email', 'subject', 'message']
         data = dict()
 
         try:
             for k,v in form_dict.iteritems():
                 if k in data_fields and bool(v[0]):
                     data[k] = unicode(v[0]).decode('utf-8')
-        except:
-            print 'Failed to handle form:\n\t%r' % request.form # DEBUG
+            logger.info('Form->Dict Serialize: %s', str(data))
+        except Exception, e:
+            #print 'Failed to handle form:\n\t%r' % request.form # DEBUG
+            logger.error('Serialize Fail!', exc_info=True)
             return render_template('failure.html',
                 goto=request.referrer,
                 message="There was an error. Your message was not sent. Please try again."
@@ -59,14 +77,22 @@ def index():
         if data.get('email'):
             print '\nREFERRER %s\n' % request.referrer # DEBUG
             site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
+            #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
+            message = format_msg_html(**data)
             if site is not None:
-                if send_email(app, data.get('email'), message=data.get('message'), sender=config.MAIL_SENDER, subject="Contact-Form: New message from your website."):
+                recp = site.email
+                logger.info('Site found in records!')
+                if send_email(app, recp=recp, message=message, sender=config.MAIL_SENDER, subject="Contact-Form: New message from your website."):
+                    logger.info('Email sent to %s', str(data.get('email')))
                     return render_template('success.html',
                         goto=request.referrer,
                         message="Your message was sent successfully."
                     )
+            else:
+                logger.error('Site not found in records!')
 
-        print 'Error! Not sending mail...\n\t%r' % request.form # DEBUG
+        logger.error('Email not sent!\n\t%s\n\n---\n\n\n', str(request.form))
+        #print 'Error! Not sending mail...\n\t%r' % request.form # DEBUG
         return render_template('failure.html',
             goto=request.referrer,
             message="There was an error. Your message was not sent. Please try again."
@@ -74,6 +100,31 @@ def index():
 
     return redirect(url_for('signup'))
 
+
+def format_msg_html(**kwargs):
+    result = ''
+
+    name = kwargs.get('name')
+    if name is not None:
+        result += '**Name**: {}\n'.format(name)
+
+    email = kwargs.get('email')
+    if email is not None:
+        result += '**Email**: {}\n'.format(email)
+
+    phone = kwargs.get('phone')
+    if phone is not None:
+        result += '**Phone**: {}\n\n'.format(phone)
+
+    subject = kwargs.get('subject')
+    if subject is not None:
+        result += '**Subject**: {}\n'.format(subject)
+
+    message = kwargs.get('message')
+    if message is not None:
+        result += '**Message**: {}\n'.format(message)
+
+    return result
 
 # @app.route('/send_mail/', methods=['POST'])
 # def submit_message():
@@ -114,8 +165,10 @@ def index():
 def signup():
 
     if request.method == 'POST':
-        db_ops.rollback()
+        logger.info('\n')
+        logger.info('New signup form received!')
         form_dict = dict(request.form)
+        logger.info('Form: %s', str(form_dict))
         param_dict = dict()
 
         try:
@@ -127,21 +180,20 @@ def signup():
             # Need to cleanup this code
             if validate_email(param_dict.get('email', 'invalid_email')):
                 if db_ops.insert_val(db_ops.Site, param_dict, rollback_on_fail=True):
+                    logger.info('New user subscribed!')
                     return render_template('success.html',
                         goto=request.referrer,
                         message="Thank you. Your site has been registered with us."
                     )
-                else:
-                    assert False
-            else:
-                assert False
-        except:
-            print 'Error! Failed to register new site:\n\t%r' % request.form # DEBUG
+        except Exception, e:
+            #print 'Error! Failed to register new site:\n\t%r' % request.form # DEBUG
+            logger.error('Error signing-up new user!', exc_info=True)
             return render_template('failure.html',
                 goto=request.referrer,
                 message="There was an error. Your registration was unsuccessful. Please try again."
             )
         finally:
+            logger.info('\n\n---\n\n')
             param_dict.clear()
 
     return render_template('signup.html')
@@ -158,7 +210,10 @@ def _404(error):
 
 
 def validate_email(email):
-    return validator(email)
+    if validator(email):
+        return True
+    else:
+        raise EmailValidationError
 
 
 def send_email(app, recp, message, sender=None, subject="Someone sent a message from your website."):
@@ -181,9 +236,14 @@ def send_email(app, recp, message, sender=None, subject="Someone sent a message 
 
         mail.send(mail_msg)
         return True
-    except:
-        print 'Error formatting and sending email!' # DEBUG
+    except Exception, e:
+        #print 'Error formatting and sending email!' # DEBUG
+        logger.error('Error formatting and sending email!', exc_info=True)
         return False
+
+
+class EmailValidationError(Exception):
+    pass
 
 
 if __name__ == '__main__':

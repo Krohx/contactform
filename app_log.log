@@ -1,0 +1,87 @@
+Thu Jun, 2016 (06:14:05 PM) | INFO: 
+New contact-us form received!
+Thu Jun, 2016 (06:14:05 PM) | INFO: Site: None
+Thu Jun, 2016 (06:14:05 PM) | INFO: Form: {'message': [u'Test Test Test'], 'subject': [u'Test'], 'email': [u'pythonflask@yahoo.com'], 'name': [u'Hello']}
+Thu Jun, 2016 (06:14:05 PM) | INFO: Form->Dict Serialize: {'message': u'Test Test Test', 'email': u'pythonflask@yahoo.com', 'name': u'Hello', 'subject': u'Test'}
+Thu Jun, 2016 (06:14:05 PM) | ERROR: Site not found in records!
+Thu Jun, 2016 (06:14:05 PM) | ERROR: Email not sent!
+	ImmutableMultiDict([('email', u'pythonflask@yahoo.com'), ('message', u'Test Test Test'), ('name', u'Hello'), ('subject', u'Test')])
+
+---
+
+
+
+Thu Jun, 2016 (06:17:53 PM) | INFO: 
+
+Thu Jun, 2016 (06:17:53 PM) | INFO: New contact-us form received!
+Thu Jun, 2016 (06:17:53 PM) | INFO: Site: None
+Thu Jun, 2016 (06:17:53 PM) | INFO: Form: {'message': [u'Test Test Test'], 'subject': [u'Test'], 'email': [u'pythonflask@yahoo.com'], 'name': [u'Hello']}
+Thu Jun, 2016 (06:17:53 PM) | INFO: Form->Dict Serialize: {'message': u'Test Test Test', 'email': u'pythonflask@yahoo.com', 'name': u'Hello', 'subject': u'Test'}
+Thu Jun, 2016 (06:17:53 PM) | INFO: Site found in records!
+Thu Jun, 2016 (06:17:53 PM) | ERROR: Error formatting and sending email!
+Traceback (most recent call last):
+  File "/home/acetakwas/dev/web_dev/flask_web_dev/proj/krohx_proj/contact_form/contact_form/__init__.py", line 236, in send_email
+    mail.send(mail_msg)
+  File "/home/acetakwas/dev/my_virtualenvs/contact_form/local/lib/python2.7/site-packages/flask_mail.py", line 491, in send
+    with self.connect() as connection:
+  File "/home/acetakwas/dev/my_virtualenvs/contact_form/local/lib/python2.7/site-packages/flask_mail.py", line 144, in __enter__
+    self.host = self.configure_host()
+  File "/home/acetakwas/dev/my_virtualenvs/contact_form/local/lib/python2.7/site-packages/flask_mail.py", line 158, in configure_host
+    host = smtplib.SMTP(self.mail.server, self.mail.port)
+  File "/usr/lib/python2.7/smtplib.py", line 256, in __init__
+    (code, msg) = self.connect(host, port)
+  File "/usr/lib/python2.7/smtplib.py", line 316, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+  File "/usr/lib/python2.7/smtplib.py", line 291, in _get_socket
+    return socket.create_connection((host, port), timeout)
+  File "/usr/lib/python2.7/socket.py", line 557, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+gaierror: [Errno -3] Temporary failure in name resolution
+Thu Jun, 2016 (06:17:53 PM) | ERROR: Email not sent!
+	ImmutableMultiDict([('email', u'pythonflask@yahoo.com'), ('message', u'Test Test Test'), ('name', u'Hello'), ('subject', u'Test')])
+
+---
+
+
+
+Thu Jun, 2016 (06:20:03 PM) | INFO: 
+
+Thu Jun, 2016 (06:20:03 PM) | INFO: New contact-us form received!
+Thu Jun, 2016 (06:20:03 PM) | INFO: Site: None
+Thu Jun, 2016 (06:20:03 PM) | INFO: Form: {'message': [u'Test Test Test'], 'subject': [u'Test'], 'email': [u'pythonflask@yahoo.com'], 'name': [u'Hello']}
+Thu Jun, 2016 (06:20:03 PM) | INFO: Form->Dict Serialize: {'message': u'Test Test Test', 'email': u'pythonflask@yahoo.com', 'name': u'Hello', 'subject': u'Test'}
+Thu Jun, 2016 (06:20:03 PM) | INFO: Site found in records!
+Thu Jun, 2016 (06:20:03 PM) | ERROR: Error formatting and sending email!
+Traceback (most recent call last):
+  File "/home/acetakwas/dev/web_dev/flask_web_dev/proj/krohx_proj/contact_form/contact_form/__init__.py", line 236, in send_email
+    mail.send(mail_msg)
+  File "/home/acetakwas/dev/my_virtualenvs/contact_form/local/lib/python2.7/site-packages/flask_mail.py", line 491, in send
+    with self.connect() as connection:
+  File "/home/acetakwas/dev/my_virtualenvs/contact_form/local/lib/python2.7/site-packages/flask_mail.py", line 144, in __enter__
+    self.host = self.configure_host()
+  File "/home/acetakwas/dev/my_virtualenvs/contact_form/local/lib/python2.7/site-packages/flask_mail.py", line 158, in configure_host
+    host = smtplib.SMTP(self.mail.server, self.mail.port)
+  File "/usr/lib/python2.7/smtplib.py", line 256, in __init__
+    (code, msg) = self.connect(host, port)
+  File "/usr/lib/python2.7/smtplib.py", line 316, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+  File "/usr/lib/python2.7/smtplib.py", line 291, in _get_socket
+    return socket.create_connection((host, port), timeout)
+  File "/usr/lib/python2.7/socket.py", line 557, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+gaierror: [Errno -3] Temporary failure in name resolution
+Thu Jun, 2016 (06:20:03 PM) | ERROR: Email not sent!
+	ImmutableMultiDict([('email', u'pythonflask@yahoo.com'), ('message', u'Test Test Test'), ('name', u'Hello'), ('subject', u'Test')])
+
+---
+
+
+
+Thu Jun, 2016 (06:21:10 PM) | INFO: 
+
+Thu Jun, 2016 (06:21:10 PM) | INFO: New contact-us form received!
+Thu Jun, 2016 (06:21:10 PM) | INFO: Site: None
+Thu Jun, 2016 (06:21:10 PM) | INFO: Form: {'message': [u'Test Test Test'], 'subject': [u'Test'], 'email': [u'pythonflask@yahoo.com'], 'name': [u'Hello']}
+Thu Jun, 2016 (06:21:10 PM) | INFO: Form->Dict Serialize: {'message': u'Test Test Test', 'email': u'pythonflask@yahoo.com', 'name': u'Hello', 'subject': u'Test'}
+Thu Jun, 2016 (06:21:10 PM) | INFO: Site found in records!
+Thu Jun, 2016 (06:21:15 PM) | INFO: Email sent to pythonflask@yahoo.com
