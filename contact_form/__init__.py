@@ -30,7 +30,7 @@ db = SQLAlchemy(app)
 
 
 import db_ops # circular import guard
-#db.create_all()
+db.create_all()
 
 # email validator
 validator = Email()
@@ -187,5 +187,4 @@ def send_email(app, recp, message, sender=None, subject="Someone sent a message 
 
 
 if __name__ == '__main__':
-    db.create_all()
     app.run()
