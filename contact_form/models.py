@@ -2,6 +2,7 @@
     Database Models
 '''
 # stdlib imports
+import datetime
 from textwrap import dedent
 
 # library imports
@@ -20,13 +21,15 @@ class Site(db.Model):
     name = db.Column(db.String(128), nullable=True, unique=False)
     url = db.Column(db.String(128), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=False, unique=True)
-    password_hash = db.Column(db.String, nullable=False, unique=False) 
+    password_hash = db.Column(db.String, nullable=False, unique=False)
+    reg_datetime = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False, unique=False)
 
     def __init__(self, url, email, password, name=None):
         self.name = name
         self.url = url
         self.email = email
         self.password = password
+        self.reg_datetime = datetime.datetime.now()
 
     def __repr__(self):
         return '<Site: %r; Email: %r>' % (self.url, self.email)
@@ -67,10 +70,20 @@ class Message(db.Model):
     phone = db.Column(db.String, default='', nullable=True, unique=False)
     subject = db.Column(db.String, default='', nullable=True, unique=False)
     text = db.Column(db.String, default='', nullable=True, unique=False)
-    recp_id = db.Column(db.Integer, db.ForeignKey('sites.id'), nullable=True, unique=False)
-    recp = db.relationship('Site', uselist=False, backref=db.backref('messages', uselist=True))
+    msg_datetime = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False, unique=False)
+    site_id = db.Column(db.Integer, db.ForeignKey('sites.id'), nullable=True, unique=False)
+    site = db.relationship('Site', uselist=False, backref=db.backref('messages', uselist=True))
 
-    def __repr__(self):
+    def __init__(self, site_id, name=None, email=None, phone=None, subject=None, text=None):
+        self.site_id = site_id
+        self.name = name or ''
+        self.email = email or ''
+        self.phone = phone or ''
+        self.subject = subject or ''
+        self.text = text or ''
+        self.msg_datetime = datetime.datetime.now()
+
+    def __repr__(self, name, email, phone, subject, text):
         return dedent(
             '''
                 Name: {name}
@@ -85,7 +98,7 @@ class Message(db.Model):
                 name=self.name,
                 email=self.email,
                 phone=self.phone,
-                recp=self.recp,
+                recp=self.site,
                 subject=self.subject,
                 text=self.text
             )

@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 
 # local imports
 from contact_form import db
-from contact_form.models import Site
+from contact_form.models import Site, Message
 
 # create database tables
 #db.create_all()

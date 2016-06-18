@@ -115,6 +115,15 @@ def format_msg_html(**kwargs):
     )
 
 
+def analytics_store(kw_dict):
+    try:
+        db_ops.insert_val(db_ops.Message, kw_dict)
+        logger.info('Analytics data saved.')
+    except Exception, e:
+        logger.error('Error saving analytics details!', exc_info=True)
+
+
+
 class EmailValidationError(Exception):
     pass
 
@@ -150,10 +159,22 @@ def index():
             print '\nREFERRER %s\n' % request.referrer # DEBUG
             site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
             #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
+            analytics_store(data) # store received data for future analytics
             message = format_msg_html(**data)
+            logger.info('Email HTML formatted')
+            
+            recp = None
+
             if site is not None:
                 logger.info('Site found in records!')
                 recp = site.email
+
+            # For debug purposes
+            elif app.config.get('DEBUG', False):
+                logger.debug('Sending mail to debug email: %s', config.MAIL_SENDER)
+                recp = config.MAIL_SENDER
+            
+            if recp is not None:
                 if send_email(app, recp=recp, message=message, sender=config.MAIL_SENDER, subject="ContactForm: New message from your website."):
                     logger.info('Email sent to %s', str(data.get('email')))
                     return render_template('success.html',
