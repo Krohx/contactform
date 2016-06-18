@@ -115,7 +115,13 @@ def format_msg_html(**kwargs):
     )
 
 
-def analytics_store(kw_dict):
+def analytics_store(kw_dict, site):
+    kw_dict['text'] = kw_dict.pop('message', '')
+    if site is not None:
+        try:
+            kw_dict['site_id'] = site.id
+        except: # AttributeError
+            kw_dict['site_id'] = None
     try:
         db_ops.insert_val(db_ops.Message, kw_dict)
         logger.info('Analytics data saved.')
@@ -159,7 +165,7 @@ def index():
             print '\nREFERRER %s\n' % request.referrer # DEBUG
             site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
             #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
-            analytics_store(data) # store received data for future analytics
+            analytics_store(data, site) # store received data for future analytics
             message = format_msg_html(**data)
             logger.info('Email HTML formatted')
             
