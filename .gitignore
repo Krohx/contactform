@@ -3,6 +3,7 @@ temp.py
 *~
 *.swp
 *.pyc
+*.log
 *.orig
 .hg
 *hgignore*
