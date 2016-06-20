@@ -12,6 +12,8 @@ Contact form app for static websites
 # standard lib imports
 import os
 import logging
+import requests
+from urlparse import urlparse
 
 # library imports
 from flask import Flask, redirect, url_for, redirect, request, render_template
@@ -56,13 +58,21 @@ def log_break():
     logger.info('\n\n---\n\n')
 
 
-def is_valid_url(url):
-    import requests as r
-    page = r.get(url)
-    if page.status_code == 200:
-        page.content
+def validate_and_get_domain(url):
+    logger.info('Validating URL... %s', url)
+    link = urlparse(url)
+    scheme = link.scheme or 'http'
+    domain = ''.join(scheme, '://', link.netloc)
 
-    return False
+    try:
+        if request(domain).status_code != 200:
+            raise InvalidURLError
+    except Exception, e:
+        logger.error('Error validating URL', exc_info=True)
+        return None
+
+    logger.info('URL is valid.')
+    return domain
 
 
 def validate_email(email):
@@ -126,11 +136,14 @@ def analytics_store(kw_dict, site):
         db_ops.insert_val(db_ops.Message, kw_dict)
         logger.info('Analytics data saved.')
     except Exception, e:
-        logger.error('Error saving analytics details!', exc_info=True)
-
+        logger.error('Error saving analytics details!\n\t%r', kw_dict, exc_info=True)
 
 
 class EmailValidationError(Exception):
+    pass
+
+
+class InvalidURLError(Exception):
     pass
 
 
@@ -162,26 +175,28 @@ def index():
             )
 
         if data.get('email'):
-            site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
-            #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
-            analytics_store(data, site) # store received data for future analytics
-            message = format_msg_html(**data)
-            logger.info('Email HTML formatted')
-            
-            recp = None
-
-            if site is not None:
+            url = validate_and_get_domain(request.referrer)
+            try:
+                site = db_ops.ret_val(db_ops.Site, dict(url=url))
                 logger.info('Site found in records!')
                 recp = site.email
+            except Exception, e:
+                logger.error('Error retrieving site data from DB!', exc_info=True)
+                recp = None
+            #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
+            analytics_store(data, site) # store received data for future analytics    
 
             # For debug purposes
-            elif app.config.get('DEBUG', False):
+            if app.config.get('DEBUG', False):
                 logger.debug('Sending mail to debug email: %s', config.MAIL_SENDER)
                 recp = config.MAIL_SENDER
             
             if recp is not None:
+                message = format_msg_html(**data)
+                logger.info('Email HTML formatted')
+                
                 if send_email(app, recp=recp, message=message, sender=config.MAIL_SENDER, subject="ContactForm: New message from your website."):
-                    logger.info('Email sent to %s', str(data.get('email')))
+                    logger.info('Email sent to %s', recp)
                     return render_template('success.html',
                         goto=request.referrer,
                         message="Your message was sent successfully."
@@ -219,7 +234,7 @@ def signup():
             param_dict['password'] = form_dict.get('password')[0]
             #verifyurl
             # Need to cleanup this code
-            if validate_email(param_dict.get('email', 'invalid_email')):
+            if validate_email(param_dict.get('email', 'invalid_email')) and validate_and_get_domain(param_dict.get('url')):
                 if db_ops.insert_val(db_ops.Site, param_dict, rollback_on_fail=True):
                     logger.info('New user subscribed!')
                     return render_template('success.html',

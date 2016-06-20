@@ -21,6 +21,7 @@ setup(name='ContactForm',
         'click==6.6',
         'dominate==2.2.0',
         'itsdangerous==0.24',
+        'requests==2.10.0',
         'visitor==0.1.3',
         'wsgiref==0.1.2'
     ],
