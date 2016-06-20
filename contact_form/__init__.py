@@ -41,7 +41,7 @@ if app.config.get('DEBUG', False):
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler('app_log.log')
+file_handler = logging.FileHandler(config.LOG_FILE)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s:\t%(message)s', datefmt='%a %b, %Y (%I:%M:%S %p)')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -162,7 +162,6 @@ def index():
             )
 
         if data.get('email'):
-            print '\nREFERRER %s\n' % request.referrer # DEBUG
             site = db_ops.ret_val(db_ops.Site, dict(url=request.referrer))
             #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
             analytics_store(data, site) # store received data for future analytics

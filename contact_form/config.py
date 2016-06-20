@@ -1,5 +1,8 @@
 import os
 
+#logging config
+LOG_FILE = 'app_log.log'
+
 # database config
 BASE_URI = os.path.dirname(__file__)
 DB_URI = os.path.join(BASE_URI, '.contact_form_data.sqlite')
