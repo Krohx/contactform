@@ -1,10 +1,11 @@
 import os
 
+BASE_URI = os.path.dirname(__file__)
+
 #logging config
-LOG_FILE = 'app_log.log'
+LOG_FILE = os.path.join(BASE_URI, 'app_log.log')
 
 # database config
-BASE_URI = os.path.dirname(__file__)
 DB_URI = os.path.join(BASE_URI, '.contact_form_data.sqlite')
 SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DB_URI
