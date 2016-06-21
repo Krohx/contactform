@@ -3,7 +3,7 @@ import os
 BASE_URI = os.path.dirname(__file__)
 
 #logging config
-LOG_FILE = os.path.join(BASE_URI, 'app_log.log')
+LOG_FILE = os.path.join(BASE_URI, '.app_log.log')
 
 # database config
 DB_URI = os.path.join(BASE_URI, '.contact_form_data.sqlite')

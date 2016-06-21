@@ -12,10 +12,10 @@ Contact form app for static websites
 # standard lib imports
 import os
 import logging
-import requests
 from urlparse import urlparse
 
 # library imports
+import requests
 from flask import Flask, redirect, url_for, redirect, request, render_template
 from flask_mail import Mail, Message
 from flask_sqlalchemy import SQLAlchemy
