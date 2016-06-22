@@ -42,11 +42,16 @@ logger = logging.getLogger(__name__)
 if app.config.get('DEBUG', False):
     logger.setLevel(logging.DEBUG)
 else:
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler(config.LOG_FILE)
+file_handler.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s:\t%(message)s', datefmt='%a %b, %Y (%I:%M:%S %p)')
 file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 
 def log_newline(num_lines=1):
