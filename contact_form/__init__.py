@@ -155,7 +155,7 @@ class InvalidURLError(Exception):
 @app.route('/index/', methods=['GET', 'POST'])
 @app.route('/', methods=['GET', 'POST'])
 def index():
-
+    logger.debug('METHOD %s', request.method)
     if request.method == 'POST':
         log_newline(2)
         logger.info('New contact-us form received!')
