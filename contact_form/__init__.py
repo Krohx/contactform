@@ -65,7 +65,7 @@ def validate_and_get_domain(url):
     domain = ''.join([scheme, '://', link.netloc])
 
     try:
-        if request(domain).status_code != 200:
+        if requests(domain).status_code != 200:
             raise InvalidURLError
     except Exception, e:
         logger.error('Error validating URL', exc_info=True)
