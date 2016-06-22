@@ -181,7 +181,7 @@ def index():
 
         if data.get('email'):
             # DEBUG
-            print request
+            print dir(request)
             print
             print request.referrer
             url = validate_and_get_domain(request.referrer)
