@@ -183,6 +183,7 @@ def index():
             # DEBUG
             print dir(request)
             print request.headers
+            logger.error(request.headers)
             print
             print request.referrer
             url = validate_and_get_domain(request.referrer)
