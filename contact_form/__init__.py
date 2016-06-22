@@ -180,6 +180,10 @@ def index():
             )
 
         if data.get('email'):
+            # DEBUG
+            print request
+            print
+            print request.referrer
             url = validate_and_get_domain(request.referrer)
             try:
                 site = db_ops.ret_val(db_ops.Site, dict(url=url))

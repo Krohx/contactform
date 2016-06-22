@@ -1,6 +1,8 @@
 import os
 
-BASE_URI = os.path.dirname(__file__)
+OPENSHIFT_DATA_DIR = os.environ.get('OPENSHIFT_DATA_DIR', None) # for hosting on Openshift
+BASE_URI = OPENSHIFT_DATA_DIR or os.path.dirname(__file__)
+
 
 #logging config
 LOG_FILE = os.path.join(BASE_URI, '.app_log.log')
