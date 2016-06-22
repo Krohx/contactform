@@ -62,7 +62,7 @@ def validate_and_get_domain(url):
     logger.info('Validating URL... %s', url)
     link = urlparse(url)
     scheme = link.scheme or 'http'
-    domain = ''.join(scheme, '://', link.netloc)
+    domain = ''.join([scheme, '://', link.netloc])
 
     try:
         if request(domain).status_code != 200:
