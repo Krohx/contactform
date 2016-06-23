@@ -62,19 +62,18 @@ def log_break():
 
 def validate_and_get_domain(url):
     logger.info('Validating URL... %s', url)
-    link = urlparse(url)
+    parsed_url = urlparse(url)
     scheme = link.scheme or 'http'
-    domain = ''.join([scheme, '://', link.netloc])
-
+    full_url = ''.join([parsed_url.scheme, '://', parsed_url.netloc])
     try:
-        if requests.get(domain).status_code != 200:
+        if requests.get(full_url).status_code != 200:
             raise InvalidURLError
     except Exception, e:
-        logger.error('Error validating URL', exc_info=True)
+        logger.error('Error validating URL: %s', full_url, exc_info=True)
         return None
 
     logger.info('URL is valid.')
-    return domain
+    return parsed_url.netloc
 
 
 def validate_email(email):
