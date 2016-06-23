@@ -74,7 +74,6 @@ class Message(db.Model):
     source_url = db.Column(db.String, nullable=True, unique=False)
 
     def __init__(self, name=None, email=None, phone=None, subject=None, text=None, source_url=None):
-        self.site_id = site_id
         self.name = name or ''
         self.email = email or ''
         self.phone = phone or ''

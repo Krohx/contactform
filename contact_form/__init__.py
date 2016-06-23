@@ -228,12 +228,13 @@ def signup():
 
         try:
             param_dict['name'] = form_dict.get('name')[0]
-            param_dict['url'] = form_dict.get('url')[0]
+            #param_dict['url'] = form_dict.get('url')[0]
             param_dict['email'] = form_dict.get('email')[0]
             param_dict['password'] = form_dict.get('password')[0]
             #verifyurl
             # Need to cleanup this code
-            if validate_email(param_dict.get('email', 'invalid_email')) and validate_and_get_domain(param_dict.get('url')):
+            param_dict['url'] = validate_and_get_domain(form_dict.get('url')[0])
+            if validate_email(param_dict.get('email', 'invalid_email')) and  param_dict.get('url'):
                 if db_ops.insert_val(db_ops.Site, param_dict, rollback_on_fail=True):
                     logger.info('New user subscribed!')
                     return render_template('success.html',
