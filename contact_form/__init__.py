@@ -110,10 +110,10 @@ def send_email(app, recp, message, sender=None, subject="Someone sent a message 
         return False
 
 
-def format_msg_html(**kwargs):
+def format_msg_html(args):
     param_dict = dict()
 
-    param_dict['name'] = kwargs.get('name', 'None').title()
+    param_dict['name'] = kwargs.get('name', 'None')
     param_dict['email'] = kwargs.get('email', 'None')
     param_dict['phone'] = kwargs.get('phone', 'None')
     subject = kwargs.get('subject', 'No subject')
@@ -129,11 +129,17 @@ def format_msg_html(**kwargs):
 
 
 def analytics_store(kw_dict, source_url):
-    kw_dict['text'] = kw_dict.pop('message', '')
-    kw_dict['source_url'] = source_url
+    param_dict = dict()
+
+    param_dict['name'] = kwargs.get('name', None)
+    param_dict['email'] = kwargs.get('email', None)
+    param_dict['phone'] = kwargs.get('phone', None)
+    param_dict['subject'] = kwargs.get('subject', None)
+    param_dict['text'] = kwargs.get('message', None)
+    param_dict['source_url'] = source_url
 
     try:
-        db_ops.insert_val(db_ops.Message, kw_dict)
+        db_ops.insert_val(db_ops.Message, param_dict)
         logger.info('Analytics data saved.')
     except Exception, e:
         logger.error('Error saving analytics details!\n\t%r', kw_dict, exc_info=True)
@@ -192,7 +198,7 @@ def index():
                 recp = config.MAIL_SENDER
             
             if recp is not None:
-                message = format_msg_html(**data)
+                message = format_msg_html(data)
                 logger.info('Email HTML formatted')
                 
                 if send_email(app, recp=recp, message=message, sender=config.MAIL_SENDER, subject="ContactForm: New message from your website."):
