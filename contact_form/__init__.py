@@ -110,7 +110,7 @@ def send_email(app, recp, message, sender=None, subject="Someone sent a message 
         return False
 
 
-def format_msg_html(args):
+def format_msg_html(**kwargs):
     param_dict = dict()
 
     param_dict['name'] = kwargs.get('name', 'None')
@@ -128,7 +128,7 @@ def format_msg_html(args):
     )
 
 
-def analytics_store(kw_dict, source_url):
+def analytics_store(url, **kwargs):
     param_dict = dict()
 
     param_dict['name'] = kwargs.get('name', None)
@@ -142,7 +142,7 @@ def analytics_store(kw_dict, source_url):
         db_ops.insert_val(db_ops.Message, param_dict)
         logger.info('Analytics data saved.')
     except Exception, e:
-        logger.error('Error saving analytics details!\n\t%r', kw_dict, exc_info=True)
+        logger.error('Error saving analytics details!\n\t%r', kwargs, exc_info=True)
 
 
 class EmailValidationError(Exception):
@@ -190,7 +190,7 @@ def index():
                 logger.error('Error retrieving site data from DB!', exc_info=True)
                 recp = None
             #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
-            analytics_store(data, url) # store received data for future analytics    
+            analytics_store(url, **data) # store received data for future analytics    
 
             # For debug purposes
             if app.config.get('DEBUG', False):
@@ -198,7 +198,7 @@ def index():
                 recp = config.MAIL_SENDER
             
             if recp is not None:
-                message = format_msg_html(data)
+                message = format_msg_html(**data)
                 logger.info('Email HTML formatted')
                 
                 if send_email(app, recp=recp, message=message, sender=config.MAIL_SENDER, subject="ContactForm: New message from your website."):
