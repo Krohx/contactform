@@ -127,13 +127,10 @@ def format_msg_html(**kwargs):
     )
 
 
-def analytics_store(kw_dict, site):
+def analytics_store(kw_dict, source_url):
     kw_dict['text'] = kw_dict.pop('message', '')
-    if site is not None:
-        try:
-            kw_dict['site_id'] = site.id
-        except: # AttributeError
-            kw_dict['site_id'] = None
+    kw_dict['source_url'] = source_url
+
     try:
         db_ops.insert_val(db_ops.Message, kw_dict)
         logger.info('Analytics data saved.')
@@ -179,14 +176,14 @@ def index():
         if data.get('email'):
             url = validate_and_get_domain(request.referrer)
             try:
-                site = db_ops.ret_val(db_ops.Site, dict(url=url))
+                # get delivery email from site as stored in DB
+                recp = db_ops.ret_val(db_ops.Site, dict(url=url)).email
                 logger.info('Site found in records!')
-                recp = site.email
             except Exception, e:
                 logger.error('Error retrieving site data from DB!', exc_info=True)
                 recp = None
             #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
-            analytics_store(data, site) # store received data for future analytics    
+            analytics_store(data, url) # store received data for future analytics    
 
             # For debug purposes
             if app.config.get('DEBUG', False):
