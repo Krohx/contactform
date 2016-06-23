@@ -39,10 +39,7 @@ validator = Email()
 # setup logging
 #logging.basicConfig(format='%(asctime)s | %(levelname)s: %(message)s', datefmt='%a %b, %Y (%I:%M:%S %p)', filename='app_log.log', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-if app.config.get('DEBUG', False):
-    logger.setLevel(logging.DEBUG)
-else:
-    logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler(config.LOG_FILE)
 file_handler.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
@@ -155,7 +152,7 @@ class InvalidURLError(Exception):
 @app.route('/index/', methods=['GET', 'POST'])
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    logger.debug('METHOD %s', request.method)
+
     if request.method == 'POST':
         log_newline(2)
         logger.info('New contact-us form received!')
@@ -180,12 +177,6 @@ def index():
             )
 
         if data.get('email'):
-            # DEBUG
-            print dir(request)
-            print request.headers
-            logger.error(request.headers)
-            print
-            print request.referrer
             url = validate_and_get_domain(request.referrer)
             try:
                 site = db_ops.ret_val(db_ops.Site, dict(url=url))
