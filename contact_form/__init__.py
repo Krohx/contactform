@@ -63,7 +63,7 @@ def log_break():
 def validate_and_get_domain(url):
     logger.info('Validating URL... %s', url)
     parsed_url = urlparse(url)
-    scheme = link.scheme or 'http'
+    scheme = parsed_url.scheme or 'http'
     full_url = ''.join([parsed_url.scheme, '://', parsed_url.netloc])
     try:
         if requests.get(full_url).status_code != 200:
