@@ -128,7 +128,7 @@ def format_msg_html(**kwargs):
     )
 
 
-def analytics_store(url, **kwargs):
+def analytics_store(source_url, **kwargs):
     param_dict = dict()
 
     param_dict['name'] = kwargs.get('name', None)
@@ -181,16 +181,16 @@ def index():
             )
 
         if data.get('email'):
-            url = validate_and_get_domain(request.referrer)
+            source_url = validate_and_get_domain(request.referrer)
             try:
                 # get delivery email from site as stored in DB
-                recp = db_ops.ret_val(db_ops.Site, dict(url=url)).email
+                recp = db_ops.ret_val(db_ops.Site, dict(url=source_url)).email
                 logger.info('Site found in records!')
             except Exception, e:
                 logger.error('Error retrieving site data from DB!', exc_info=True)
                 recp = None
             #message = '{subj}\n\n{msg}'.format(subj=data.get('subject', ''), msg=data.get('message', '')).strip()
-            analytics_store(url, **data) # store received data for future analytics    
+            analytics_store(source_url, **data) # store received data for future analytics    
 
             # For debug purposes
             if app.config.get('DEBUG', False):
