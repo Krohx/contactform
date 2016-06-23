@@ -118,8 +118,7 @@ def format_msg_html(**kwargs):
     param_dict['phone'] = kwargs.get('phone', 'None')
     subject = kwargs.get('subject', 'No subject')
     message = kwargs.get('message', 'No message')
-    logger.debug(message)
-    logger.debug(kwargs)
+
     return render_template(
         'email_html.html',
         param_dict=param_dict,
